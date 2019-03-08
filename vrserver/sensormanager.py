@@ -25,6 +25,13 @@ class SensorManager(object):
 
         self._listeners = []
 
+    def destroy(self):
+        for actor in [self._gnss_sensor, self._camera_rgb_sensor, self._lidar_sensor]:
+            if actor is not None:
+                actor.destroy()
+    
+    def __del__(self):
+        self.destroy()
 
     def add_parent_actor(self, parent_actor):
         self._parent = parent_actor

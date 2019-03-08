@@ -14,6 +14,6 @@ class APPError(Exception):
         self.message = '{"error":"%s"}' % message
 
 
-class PlayerNotFoundError(APPError):
+class DUTNotFoundError(APPError):
     def __init__(self, message):
-        super(PlayerNotFoundError, self).__init__(message)
+        super(DUTNotFoundError, self).__init__(message)

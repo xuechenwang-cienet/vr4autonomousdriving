@@ -4,6 +4,7 @@
 import signal
 import sys
 import logging
+import json
 
 from flask import Flask
 from flask import request
@@ -11,9 +12,8 @@ from flask.logging import default_handler
 from flask import render_template
 
 from vrserver.venv import Venv
-from vrserver.ctu import CTU
-from vrserver.controller import Controller
-from vrserver.util import PlayerNotFoundError
+from vrserver.dutmanager import DUTManager
+from vrserver.util import APPError
 from vrserver.localdisplay import LocalDisplay
 
 
@@ -36,13 +36,11 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
 
     venv = Venv.start('127.0.0.1', 2000).proxy()
-    ctu = CTU().start().proxy()
-    ctr = Controller.start(venv, ctu).proxy()
 
     @app.route('/ping', methods=['GET'])
     def ping():
         status = {}
-        for sub_mode in [venv, ctu, ctr]:
+        for sub_mode in [venv]:
             name = str(sub_mode.actor_ref.actor_class.__name__)
             try:
                 status[name] = sub_mode.ping().get()
@@ -50,7 +48,8 @@ def create_app(test_config=None):
                 print('EXP:', exp)
                 status[name] = False
         status['http'] = True
-        return str(status)
+        status['duts'] = DUTManager.dut_status()
+        return json.dumps(status)
 
     @app.route('/scenario', methods=['GET', 'POST'])
     def scenario():
@@ -65,28 +64,28 @@ def create_app(test_config=None):
     def get_scenario_status():
         pass
 
-    @app.errorhandler(PlayerNotFoundError)
-    def handle_player_not_found(error):
+    @app.errorhandler(APPError)
+    def handle_app_error(error):
         return (error.message, 404)
 
-    @app.route('/scenario/player', methods=['GET', 'POST'])
+    @app.route('/scenario/dut', methods=['GET', 'POST'])
     def player():
         if request.method == 'POST':
-            return set_player(request.get_json())
+            return set_dut(request.get_json())
         else:
-            return get_player_status()
+            return get_dut_status()
 
-    def set_player(parameters):
-        venv.set_player(
-            vehicle_name='vehicle.lincoln.mkz2017',
-            role_name='hero',
-            color_id=0,
-            position_id=0,
-            autopilot=False).get()
+    def set_dut(parameters):
+        print(parameters)
+        name = parameters.name
+        dut_type = None
+        if parameters.dut_type:
+            dut_type = parameters.dut_type
+        DUTManager.acquire_dut(name, venv, dut_type)
         return '', 204
 
-    def get_player_status():
-        return venv.get_player_status().get()
+    def get_dut_status():
+        return #TOOD
 
     @app.route('/scenario/vehicle', methods=['GET', 'POST'])
     def vehicle():
@@ -96,11 +95,7 @@ def create_app(test_config=None):
             return get_vehicle_status()
 
     def set_vehicle():
-        venv.set_vehicle(
-            vehicle_name='vehicle.audi.tt',
-            role_name='hero',
-            color_id=0,
-            position_id=0).get()
+        venv.acquire_vehicle_with_location().get()
         return '', 204
 
     def get_vehicle_status():
@@ -118,14 +113,5 @@ def create_app(test_config=None):
 
     def get_pedestrian_status():
         pass
-
-    @app.route('/localdisplay', methods=['GET'])
-    def localdisplay():
-        venv.add_listener(LocalDisplay()).get()
-        return '', 204
-
-    @app.route('/localdisplay_show', methods=['GET'])
-    def localdisplay_show():
-        return render_template('localdisplay.html')
 
     return app
