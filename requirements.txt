@@ -1,0 +1,4 @@
+flask
+pykka
+opencv-python
+pygame

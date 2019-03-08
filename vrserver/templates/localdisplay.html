@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery.getJSON demo</title>
+  <style>
+  img {
+    height: 600px;
+    float: left;
+  }
+  </style>
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+</head>
+<body>
+ 
+<div>
+  <img id="image"></img>
+</div>
+
+<script>
+    setInterval(function() {
+        var flickerAPI = "/scenario/player?";
+        $.getJSON( flickerAPI, {
+        tags: "mount rainier",
+        tagmode: "any",
+        format: "json"
+        })
+        .done(function( data ) {
+            $("#image").attr( "src", data.camera_rgb.image );
+        });
+    }, 1000);
+</script>
+</html>

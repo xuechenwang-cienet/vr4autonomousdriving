@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "venv/bin/python",
+    "python.linting.pylintArgs": [
+    	"--unsafe-load-any-extension=y",
+	    "--extension-pkg-whitelist=pygame,carla"
+]
+}
