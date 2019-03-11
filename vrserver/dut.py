@@ -37,6 +37,7 @@ class DUT(BaseActor):
 
     def control(self, parameters):
         control = parameters
+        print(control)
         if 'manual_gear_shift' in control:
             self._control.manual_gear_shift = control['manual_gear_shift']
         if 'gear' in control:

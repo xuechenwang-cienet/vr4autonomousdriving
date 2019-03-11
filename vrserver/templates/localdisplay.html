@@ -4,21 +4,32 @@
   <meta charset="utf-8">
   <title>jQuery.getJSON demo</title>
   <style>
-  img {
-    height: 600px;
-    float: left;
-  }
+    .container {
+      position: relative;
+      text-align: center;
+      color: white;
+    }
+    .top-left {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+    }
   </style>
   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 <body>
  
-<div>
-  <div id="control"></div>
+<div class="container">
   <img id="{{ dutname }}"></img>
+  <div id="control" tabindex="0" class="top-left"></div>
 </div>
 
 <script>
+
+    $(function() {
+      $('#control').focus();
+    });
+
     let player_control = null
 
     setInterval(function() {
@@ -29,8 +40,9 @@
         format: "json"
         })
         .done(function( data ) {
-            $("#{{ dutname }}").attr( "src", data.duts.{{ dutname }}.camera_rgb.image );
             player_control = data.duts.{{ dutname }}.player.control;
+            $('#control').focus();
+            $("#{{ dutname }}").attr( "src", data.duts.{{ dutname }}.camera_rgb.image );
         });
     }, 50);
 
@@ -38,9 +50,9 @@
     // {{ dutname }}.onkeyup = handle_up;
     // {{ dutname }}.onkeypress = handle_press;
 
-    $("#control").keydown(handle_down);
-    $("#control").keyup(handle_up);
-    $("#control").keypress(handle_press);
+    control.onkeydown = handle_down;
+    control.onkeyup = handle_up;
+    control.onkeypress = handle_press;
 
     function handle_control() {
       $.ajax({
@@ -52,20 +64,23 @@
     }
 
     function handle_down(e) {
-      if (e.code == KeyW || e.code == ArrowUp) {
+      console.log('DOWN ', e)
+      if (e.code == "KeyW" || e.code == "ArrowUp") {
         player_control['throttle'] = 1;
       }
       handle_control();
     }
 
     function handle_up(e) {
-      if (e.code == KeyW || e.code == ArrowUp) {
+      console.log('UP   ', e)
+      if (e.code == "KeyW" || e.code == "ArrowUp") {
         player_control['throttle'] = 0;
       }
       handle_control();
     }
 
     function handle_press(e) {
+      console.log('PRESS', e)
     }
 
 </script>
