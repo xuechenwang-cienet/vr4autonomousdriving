@@ -30,7 +30,15 @@
       $('#control').focus();
     });
 
-    let player_control = null
+    let player_control = {
+      'manual_gear_shift': false,
+      'gear': 0,
+      'throttle': 0,
+      'steer': 0,
+      'brake': 0,
+      'hand_brake': false,
+      'reverse': false
+    }
 
     setInterval(function() {
         var flickerAPI = "/ping?";
@@ -45,10 +53,6 @@
             $("#{{ dutname }}").attr( "src", data.duts.{{ dutname }}.camera_rgb.image );
         });
     }, 50);
-
-    // {{ dutname }}.onkeydown = handle_down;
-    // {{ dutname }}.onkeyup = handle_up;
-    // {{ dutname }}.onkeypress = handle_press;
 
     control.onkeydown = handle_down;
     control.onkeyup = handle_up;
@@ -65,10 +69,14 @@
 
     function handle_down(e) {
       console.log('DOWN ', e)
-      if (e.code == "KeyW" || e.code == "ArrowUp") {
-        player_control['throttle'] = 1;
+      if (e.code == "KeyQ") {
+        player_control['reverse'] = !player_control['reverse'];
+        if (player_control['reverse']) {
+          player_control['gear'] = -1
+        } else {
+          player_control['gear'] = 0
+        }
       }
-      handle_control();
     }
 
     function handle_up(e) {
@@ -76,11 +84,31 @@
       if (e.code == "KeyW" || e.code == "ArrowUp") {
         player_control['throttle'] = 0;
       }
+      if (e.code == "KeyS" || e.code == "ArrowDown") {
+        player_control['brake'] = 0;
+      }
+      if (e.code == "KeyA" || e.code == "ArrowLeft"
+      || e.code == "KeyD" || e.code == "ArrowRight") {
+        player_control['steer'] = 0;
+      }
       handle_control();
     }
 
     function handle_press(e) {
       console.log('PRESS', e)
+      if (e.code == "KeyW" || e.code == "ArrowUp") {
+        player_control['throttle'] = 1;
+      }
+      if (e.code == "KeyS" || e.code == "ArrowDown") {
+        player_control['brake'] = 1;
+      }
+      if (e.code == "KeyA" || e.code == "ArrowLeft") {
+        player_control['steer'] = max(-0.7, player_control['steer']-0.1);
+      }
+      if (e.code == "KeyD" || e.code == "ArrowRight") {
+        player_control['steer'] = main(0.7, player_control['steer']+0.1);
+      }
+      handle_control();
     }
 
 </script>

@@ -7,6 +7,8 @@ from vrserver.sensormanager import SensorManager
 
 
 class DUT(BaseActor):
+    __control_list = ['manual_gear_shift', 'gear', 'throttle', 'steer', 'brake', 'hand_brake', 'reverse']
+
     def __init__(self, name, venv, autopilot=False):
         super(DUT, self).__init__()
         self._name = name
@@ -37,19 +39,14 @@ class DUT(BaseActor):
 
     def control(self, parameters):
         control = parameters
-        print(control)
-        if 'manual_gear_shift' in control:
-            self._control.manual_gear_shift = control['manual_gear_shift']
-        if 'gear' in control:
-            self._control.gear = control['gear']
-        if 'throttle' in control:
-            self._control.throttle = control['throttle']
-        if 'steer' in control:
-            self._control.steer =control['steer']
-        if 'brake' in control:
-            self._control.brake = control['brake']
-        if 'hand_brake' in control:
-            self._control.hand_brake = control['hand_brake']
+        some_diff = False
+        for action in DUT.__control_list:
+            if control[action] != self._control.__getattribute__(action):
+                self._control.__setattr__(action, control[action])
+                some_diff = True
+        if some_diff is False:
+            return
+        self._player.apply_control(self._control)
 
     def get_status(self):
         status = self._sensor_manager.get_status(convert=True)
@@ -59,12 +56,8 @@ class DUT(BaseActor):
         status['player']['location_y'] = transform.location.y
         status['player']['rotation_yaw'] = transform.rotation.yaw
         status['player']['control'] = {}
-        status['player']['control']['manual_gear_shift'] = self._control.manual_gear_shift
-        status['player']['control']['gear'] = self._control.gear
-        status['player']['control']['throttle'] = self._control.throttle
-        status['player']['control']['steer'] = self._control.steer
-        status['player']['control']['brake'] = self._control.brake
-        status['player']['control']['hand_brake'] = self._control.hand_brake
+        for action in DUT.__control_list:
+            status['player']['control'][action] = self._control.__getattribute__(action)
         return status
 
     def destroy(self):
