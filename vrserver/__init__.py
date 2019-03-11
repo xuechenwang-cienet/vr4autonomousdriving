@@ -1,4 +1,4 @@
-#!/bin/env python2
+#!/bin/env python3
 
 
 import signal
@@ -14,7 +14,6 @@ from flask import render_template
 from vrserver.venv import Venv
 from vrserver.dutmanager import DUTManager
 from vrserver.util import APPError
-from vrserver.localdisplay import LocalDisplay
 
 
 class RequestFormatter(logging.Formatter):
@@ -68,24 +67,33 @@ def create_app(test_config=None):
     def handle_app_error(error):
         return (error.message, 404)
 
-    @app.route('/scenario/dut', methods=['GET', 'POST'])
-    def player():
+    @app.route('/scenario/dut/<dutname>', methods=['GET', 'POST', 'PUT'])
+    def player(dutname):
+        print(dutname)
         if request.method == 'POST':
-            return set_dut(request.get_json())
+            return set_dut(dutname, request.get_json())
+        elif request.method == 'PUT':
+            return change_dut(dutname, request.get_json())
         else:
-            return get_dut_status()
+            return get_dut_status(dutname)
 
-    def set_dut(parameters):
-        print(parameters)
-        name = parameters.name
+    def set_dut(dutname, parameters):
         dut_type = None
-        if parameters.dut_type:
-            dut_type = parameters.dut_type
-        DUTManager.acquire_dut(name, venv, dut_type)
+        if "dut_type" in parameters:
+            dut_type = parameters["dut_type"]
+        autopilot = False
+        if "autopilot" in parameters:
+            autopilot = parameters["autopilot"]
+        DUTManager.acquire_dut(dutname, venv, dut_type, autopilot)
         return '', 204
 
-    def get_dut_status():
-        return #TOOD
+    def change_dut(dutname, parameters):
+        DUTManager.change_dut(dutname, parameters)
+        return '', 200
+
+
+    def get_dut_status(dutname):
+        return render_template('localdisplay.html', dutname=dutname)
 
     @app.route('/scenario/vehicle', methods=['GET', 'POST'])
     def vehicle():

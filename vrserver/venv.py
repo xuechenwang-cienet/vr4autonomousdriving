@@ -1,4 +1,4 @@
-#!/bin/env python2
+#!/bin/env python3
 
 import time
 import json
@@ -17,6 +17,12 @@ class Venv(BaseActor):
 
         self._npc_actors = {}
 
+        self._pure_venv_all()
+
+    def __del__(self):
+        self._pure_venv_all()
+
+    def _pure_venv_all(self):
         actors = self._client.get_world().get_actors()
         while len(actors) == 0:
             time.sleep(2.0)
@@ -45,11 +51,11 @@ class Venv(BaseActor):
 
     def acquire_vehicle_with_position_id(
             self,
-            vehicle_name=str(uuid.uuid4()),
+            vehicle_name,
             vehicle_type='vehicle.lincoln.mkz2017',
             role_name='hero',
             color_id=0,
-            position_id=0):
+            position_id=10):
 
         blueprint = self._build_vehicle_blueprint(vehicle_type, role_name, color_id)
         transform = self._client.get_world().get_map().get_spawn_points()[position_id]

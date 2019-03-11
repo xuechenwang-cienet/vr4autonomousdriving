@@ -1,4 +1,4 @@
-#!/bin/env python2
+#!/bin/env python3
 
 import json
 
@@ -10,9 +10,10 @@ class DUTManager(object):
     dut_dic = {}
 
     @staticmethod
-    def acquire_dut(name, venv, dut_type=None):
+    def acquire_dut(name, venv, dut_type=None, autopilot=False):
         if dut_type is None:
-            DUTManager.dut_dic[name] = DUT(name, venv)
+            dut_proxy = DUT.start(name, venv, autopilot).proxy()
+            DUTManager.dut_dic[name] = dut_proxy
 
     @staticmethod
     def release_dut(name):
@@ -20,6 +21,12 @@ class DUTManager(object):
             DUTManager.dut_dic[name].deactivate()
             DUTManager.dut_dic[name].destroy
             del DUTManager.dut_dic[name]
+
+    @staticmethod
+    def change_dut(name, parameters):
+        if name not in DUTManager.dut_dic:
+            raise DUTNotFoundError(name)
+        DUTManager.dut_dic[name].control(parameters)
 
     @staticmethod
     def active_dut(name):
@@ -37,5 +44,5 @@ class DUTManager(object):
     def dut_status():
         status = {}
         for name, dut in DUTManager.dut_dic.items():
-            status[name] = dut.ping().get()
+            status[name] = dut.get_status().get()
         return status

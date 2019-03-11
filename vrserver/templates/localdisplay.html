@@ -14,20 +14,59 @@
 <body>
  
 <div>
-  <img id="image"></img>
+  <div id="control"></div>
+  <img id="{{ dutname }}"></img>
 </div>
 
 <script>
+    let player_control = null
+
     setInterval(function() {
-        var flickerAPI = "/scenario/player?";
+        var flickerAPI = "/ping?";
         $.getJSON( flickerAPI, {
         tags: "mount rainier",
         tagmode: "any",
         format: "json"
         })
         .done(function( data ) {
-            $("#image").attr( "src", data.camera_rgb.image );
+            $("#{{ dutname }}").attr( "src", data.duts.{{ dutname }}.camera_rgb.image );
+            player_control = data.duts.{{ dutname }}.player.control;
         });
-    }, 1000);
+    }, 50);
+
+    // {{ dutname }}.onkeydown = handle_down;
+    // {{ dutname }}.onkeyup = handle_up;
+    // {{ dutname }}.onkeypress = handle_press;
+
+    $("#control").keydown(handle_down);
+    $("#control").keyup(handle_up);
+    $("#control").keypress(handle_press);
+
+    function handle_control() {
+      $.ajax({
+        type: 'PUT',
+        url: '/scenario/dut/{{ dutname }}',
+        contentType: 'application/json',
+        data: JSON.stringify(player_control)}
+      );
+    }
+
+    function handle_down(e) {
+      if (e.code == KeyW || e.code == ArrowUp) {
+        player_control['throttle'] = 1;
+      }
+      handle_control();
+    }
+
+    function handle_up(e) {
+      if (e.code == KeyW || e.code == ArrowUp) {
+        player_control['throttle'] = 0;
+      }
+      handle_control();
+    }
+
+    function handle_press(e) {
+    }
+
 </script>
 </html>
