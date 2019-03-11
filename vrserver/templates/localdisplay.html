@@ -14,6 +14,9 @@
       top: 0px;
       left: 0px;
     }
+    .status {
+      color: black;
+    }
   </style>
   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
@@ -21,7 +24,33 @@
  
 <div class="container">
   <img id="{{ dutname }}"></img>
-  <div id="control" tabindex="0" class="top-left"></div>
+  <div id="control" tabindex="0" class="top-left">
+    <table class="status">
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>Gear</td>
+        <td id="gear"></td>
+      </tr>
+      <tr>
+        <td>Throttle</td>
+        <td id="throttle"></td>
+      </tr>
+      <tr>
+        <td>Steer</td>
+        <td id="steer"></td>
+      </tr>
+      <tr>
+        <td>Brake</td>
+        <td id="brake"></td>
+      </tr>
+      <tr>
+        <td>Reverse</td>
+        <td id="reverse"></td>
+      </tr>
+  </div>
 </div>
 
 <script>
@@ -49,10 +78,15 @@
         })
         .done(function( data ) {
             player_control = data.duts.{{ dutname }}.player.control;
+            $('#gear').text(player_control.gear);
+            $('#throttle').text(player_control.throttle);
+            $('#steer').text(player_control.steer);
+            $('#brake').text(player_control.brake);
+            $('#reverse').text(player_control.reverse);
             $('#control').focus();
             $("#{{ dutname }}").attr( "src", data.duts.{{ dutname }}.camera_rgb.image );
         });
-    }, 50);
+    }, 100);
 
     control.onkeydown = handle_down;
     control.onkeyup = handle_up;
@@ -103,10 +137,10 @@
         player_control['brake'] = 1;
       }
       if (e.code == "KeyA" || e.code == "ArrowLeft") {
-        player_control['steer'] = max(-0.7, player_control['steer']-0.1);
+        player_control['steer'] = Math.max(-0.7, player_control['steer']-0.1);
       }
       if (e.code == "KeyD" || e.code == "ArrowRight") {
-        player_control['steer'] = main(0.7, player_control['steer']+0.1);
+        player_control['steer'] = Math.min(0.7, player_control['steer']+0.1);
       }
       handle_control();
     }

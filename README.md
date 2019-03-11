@@ -68,3 +68,27 @@ CARLA_0.9.3 $ ./CarlaUE4.sh
 ```bash
 (venv) $ env "FLASK_APP=vrserver" "PYTHONIOENCODING=UTF-8" python -m flask run
 ```
+
+## Manually Testing
+
+### Add a dummy DUT in VENV
+
+POST http://127.0.0.1:5000/scenario/dut/{dut_name}
+
+e.g.
+
+POST http://127.0.0.1:5000/scenario/dut/DUMMY
+
+### Open a manually control web page with any webbrowser
+
+http://127.0.0.1:5000/scenario/dut/{dut_name}
+
+```text
+    Use ARROWS or WASD keys for control.
+
+    W            : throttle
+    S            : brake
+    AD           : steer
+    Q            : toggle reverse
+    Space        : hand-brake
+```
